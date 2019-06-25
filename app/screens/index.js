@@ -1,0 +1,5 @@
+export * from "./HomeScreen"
+export * from "./SearchScreen"
+export * from "./NewDataScreen"
+export * from "./StatisticsScreen"
+export * from "./dene"
