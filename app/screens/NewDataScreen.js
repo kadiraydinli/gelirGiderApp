@@ -1,27 +1,20 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Image, Picker, View, Dimensions, Switch, FlatList, Button } from 'react-native';
-import { Text, Item, Input, List, ListItem } from 'native-base';
+import { Text, Platform, StyleSheet, ImageBackground, TouchableOpacity, Picker, View, TextInput, Switch, StatusBar, Alert } from 'react-native';
 //import TagInput from 'react-native-tag-input';
+import Tags from "react-native-tags";
+import { ScrollView } from 'react-native-gesture-handler';
 
 var SQLite = require('react-native-sqlite-storage')
 var db = SQLite.openDatabase({ name: "testDB", createFromLocation: '~testDB.db' });
-
-const inputProps = {
-    keyboardType: 'default',
-    placeholder: 'Etiket',
-    autoFocus: false,
-    style: {
-        fontSize: 14,
-        marginVertical: Platform.OS == 'ios' ? 10 : -2,
-    },
-};
-
-let bol = 0
+let isInEX = 0;
 
 export class NewDataScreen extends React.Component {
     static navigationOptions = ({ navigation }) => ({
         headerTitle: `${navigation.state.params.title}`,
-        tabBarVisible: false
+        tabBarVisible: false,
+        headerStyle: { backgroundColor: `${navigation.state.params.headerBgColor}`},
+        headerTintColor: '#fff',
+        headerTitleStyle: {color: "white", fontWeight: "200"}
     });
 
     constructor() {
@@ -30,29 +23,37 @@ export class NewDataScreen extends React.Component {
             PickerValue: '',
             switchValue: false,
             text: '',
-            emails: '',
             tags: [],
             horizontalTags: [],
             horizontalText: "",
             data: [],
-            miktar: 0,
-            aciklama: ''
+            miktar: '',
+            aciklama: '',
+            colorM: '',
+            colorA: ''
         }
     }
 
-    ekle = () => {
-        db.transaction((tx) => {
-            tx.executeSql('INSERT INTO veriler (kategoriAd, miktar, gelirMiGiderMi, tekrar, aciklama, etiket)' +
-                'VALUES (?, ?, ?, ?, ?, ?)', [this.state.PickerValue, this.state.miktar, 
-                    bol, this.state.switchValue,
-                this.state.aciklama, this.state.tags]);
-            alert(this.state.tags);
-        });
+    componentDidMount() {
+        if(isInEX) {
+            this.setState({
+                colorM: '#3CB371',
+                colorA: '#a3d9bb'
+            });
+        }
+        else {
+            this.setState({
+                colorM: '#DC143C',
+                colorA: '#eda6b3'
+            });
+        }
     }
 
     onChangeTags = (tags) => {
         this.setState({ tags });
     }
+
+    labelExtractor = (tag) => tag;
 
     onChangeText = (text) => {
         this.setState({ text });
@@ -68,26 +69,28 @@ export class NewDataScreen extends React.Component {
         }
     }
 
-    labelExtractor = (tag) => tag;
-
-    onChangeHorizontalTags = (horizontalTags) => {
-        this.setState({
-            horizontalTags,
-        });
-    };
-
-    onChangeHorizontalText = (horizontalText) => {
-        this.setState({ horizontalText });
-
-        const lastTyped = horizontalText.charAt(horizontalText.length - 1);
-        const parseWhen = [',', ' ', ';', '\n'];
-
-        if (parseWhen.indexOf(lastTyped) > -1) {
-            this.setState({
-                horizontalTags: [...this.state.horizontalTags, this.state.horizontalText],
-                horizontalText: "",
-            });
-            this._horizontalTagInput.scrollToEnd();
+    ekle = () => {
+        try {
+            if(this.state.miktar != 0) {
+                if(this.state.PickerValue != "") {
+                    db.transaction((tx) => {
+                        tx.executeSql('INSERT INTO veriler (kategoriAd, miktar, gelirMiGiderMi, tekrar, aciklama, etiket)' +
+                            'VALUES (?, ?, ?, ?, ?, ?)', [this.state.PickerValue, parseInt(this.state.miktar),
+                                isInEX, this.state.switchValue,
+                            this.state.aciklama, this.state.tags]);
+                    });
+                    if (isInEX) Alert.alert("Başarılı", "Gelir Eklendi!");
+                    else Alert.alert("Başarılı", "Gider Eklendi!");
+                }
+                else {
+                    Alert.alert("Seçim yap!", "Lütfen bir kategori seçiniz!");
+                }
+            }
+            else
+                Alert.alert("Uyarı", "Lütfen miktar giriniz!");
+        }
+        catch (e) {
+            alert("Hata Oluştu");
         }
     }
 
@@ -110,59 +113,57 @@ export class NewDataScreen extends React.Component {
     render() {
         const { navigate } = this.props.navigation;
         const { navigation } = this.props;
-        bol = navigation.getParam('bol', 0);
+        isInEX = navigation.getParam('isInEx', 0);
         return (
             <View style={styles.container}>
-                <Item style={styles.item}>
-                    <Input onChangeText={(aciklama) => this.setState({ aciklama })}
-                        value={this.state.aciklama} placeholder='Açıklama' />
-                </Item>
-                <Picker style={styles.picker}
-                    selectedValue={this.state.PickerValue}
-                    onValueChange={(itemValue, itemIndex) => this.setState({ PickerValue: itemValue })}>
-                    <Picker.Item label="Maaş" value="Maaş" />
-                    <Picker.Item label="Sağlık" value="Sağlık" />
-                    <Picker.Item label="Giyim" value="Giyim" />
-                    <Picker.Item label="Fatura" value="Fatura" />
-                    <Picker.Item label="Kira" value="Kira" />
-                    <Picker.Item label="Alışveriş" value="Alışveriş" />
-                </Picker>
-                <Item style={styles.item}>
-                    <Text style={styles.textSize}>₺</Text>
-                    <Input onChangeText={(miktar) => this.setState({ miktar })}
-                        keyboardType="numeric" value={this.state.miktar} placeholder='Miktar' />
-                </Item>
-                {/*<TagInput
-                    value={this.state.tags}
-                    onChange={this.onChangeTags}
-                    labelExtractor={this.labelExtractor}
-                    text={this.state.text}
-                    onChangeText={this.onChangeText}
-                    tagColor="blue"
-                    tagTextColor="white"
-                    inputProps={inputProps}
-                    maxHeight={75}
-                />*/}
+            <ScrollView>
+                {
+                    isInEX ? (<StatusBar backgroundColor="#3CB371" barStyle="light-content" />) : 
+                        (<StatusBar backgroundColor="#DC143C" barStyle="light-content" />)
+                }
+                <TextInput style={styles.item} onChangeText={(aciklama) => this.setState({ aciklama })}
+                    value={this.state.aciklama} placeholder='Açıklama' underlineColorAndroid="gray" />
+                <View style={styles.item}>
+                    <Text style={{fontSize:15}}>Kategori Seçiniz</Text>
+                    <Picker
+                        selectedValue={this.state.PickerValue}
+                        onValueChange={(itemValue, itemIndex) => this.setState({ PickerValue: itemValue })}>
+                        <Picker.Item label="Lütfen kategori seçiniz" value="" />
+                        <Picker.Item label="Maaş" value="Maaş" />
+                        <Picker.Item label="Sağlık" value="Sağlık" />
+                        <Picker.Item label="Giyim" value="Giyim" />
+                        <Picker.Item label="Fatura" value="Fatura" />
+                        <Picker.Item label="Kira" value="Kira" />
+                        <Picker.Item label="Alışveriş" value="Alışveriş" />
+                    </Picker>
+                </View>
+                <TextInput style={styles.item} onChangeText={(miktar) => this.setState({ miktar })}
+                    keyboardType="numeric" value={this.state.miktar} placeholder='Miktar' underlineColorAndroid="gray" />
                 <View style={styles.switch}>
-                    <Text style={{  }}>{this.state.switchValue ? 'Açık' : 'Kapalı'} Tekrarla</Text>
+                    <Text style={{ right: "50%" }}>Tekrarla</Text>
                     <Switch value={this.state.switchValue}
+                        thumbColor={this.state.colorM}
+                        trackColor={{ true: [this.state.colorM] }}
                         onValueChange={(switchValue) => this.setState({ switchValue })} />
                 </View>
-                <Text>{bol}</Text>
-                <Button onPress={this.ekle} title="Kaydet" />
+                <View style={{ margin: 50 }}>
+                    <TouchableOpacity onPress={this.ekle} style={{ ...styles.button, backgroundColor: [this.state.colorM]}}>
+                        <Text style={{ fontSize: 17, color: "white" }}>KAYDET</Text>
+                    </TouchableOpacity>
+                </View>
+                </ScrollView>
             </View>
         );
     }
 };
 
 const styles = StyleSheet.create({
-    themeColor: { backgroundColor: "#805080" },
-    textSize: { fontSize: 20 },
-    container: { flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch' },
-    item: { alignSelf: "center", marginLeft: "15%", marginRight: "15%", marginBottom: 30 },
-    button: { alignSelf: "center", marginLeft: "10%", marginRight: "10%" },
-    switch: { flexDirection: "row", alignSelf: "flex-end", marginBottom: 20, right: "13%" },
-    picker: { alignSelf: "center", width: "60%", marginBottom: 30 }
+    container: { flex: 1, justifyContent: "center", backgroundColor: "#fff" },
+    item: { alignSelf: "center", width:"80%", fontSize: 16, margin: 20 },
+    button: { height: "10%", borderRadius: 30, padding: 25, justifyContent: "center", alignItems: "center" },
+    switch: { flexDirection: "row", alignSelf: "flex-end", margin: 20, right: "7%" },
+    picker: { alignSelf: "center", width: "80%", marginBottom: 30, backgroundColor:"#DCDCDC" },
+    line: { borderBottomColor: 'gray', borderBottomWidth: 0.5 }
 });
 
 export default NewDataScreen;

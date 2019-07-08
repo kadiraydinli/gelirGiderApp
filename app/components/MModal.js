@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { Text, Modal, TouchableHighlight, View, Alert, StyleSheet } from 'react-native';
-//import MyModal from "../components/MModal";
-import MyModal from "../components/MyModal";
+import { Text, View, Alert, Modal, TouchableHighlight, StyleSheet } from 'react-native';
+import SimpleModal from "./MyModal";
 
-export class dene extends React.Component  {
+export default class MModal extends Component {
     constructor(props) {
         super(props);
 
@@ -14,27 +13,27 @@ export class dene extends React.Component  {
     }
 
     changeModalVisibility = (bool) => {
-        this.setState({ isModalVisible: bool });
+        this.setState({isModalVisible: bool});
     }
 
     setData = (data) => {
-        this.setState({ choosenData: data });
+        this.setState({choosenData: data});
     }
 
     render() {
-        return (
+        return(
             <View style={styles.container}>
                 <Text style={styles.text}>
                     {this.state.choosenData}
                 </Text>
-                <TouchableHighlight onPress={() => this.changeModalVisibility(true)} style={[styles.touchableHighlight, { backgroundColor: "orange" }]}
-                    underlayColor={"red"}>
+                <TouchableHighlight onPress={() => this.changeModalVisibility(true)} style={[styles.touchableHighlight, {backgroundColor: "orange"}]}
+                underlayColor={"#f1f1f1"}>
                     <Text style={styles.text}>Modal Aç</Text>
                 </TouchableHighlight>
 
                 <Modal transparent={true} visible={this.state.isModalVisible} onRequestClose={() => this.changeModalVisibility(false)}
                     animationType='fade'>
-                    <MyModal changeModalVisibility={this.changeModalVisibility} setData={this.setData} />
+                    <SimpleModal changeModalVisibility={this.changeModalVisibility} setData={this.setData} />
                 </Modal>
             </View>
         );
@@ -58,5 +57,3 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     }
 });
-
-export default dene;
