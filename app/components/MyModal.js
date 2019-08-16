@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, Alert, TouchableOpacity, StyleSheet, TouchableHighlight, Dimensions } from 'react-native';
-
-var kat = '';
+import { Text, View, TouchableOpacity, StyleSheet, TouchableHighlight, Dimensions } from 'react-native';
 
 export default class MyModal extends Component {
     constructor(props) {
@@ -9,50 +7,43 @@ export default class MyModal extends Component {
 
         this.state = {
             width: Dimensions.get('window').width,
-            veriler: JSON.parse(this.props.data)
+            entries: JSON.parse(this.props.data)
         };
+
         Dimensions.addEventListener('change', (e) => {
             this.setState(e.window);
         });
 
-        if (this.state.veriler.gelirMiGiderMi) kat = "#a3d9bb";
-        else kat = "#eda6b3";
+        if (this.state.entries.isInEx) { isInEx = "#3CB371"; isInExText = "Gelir"; }
+        else { isInEx = "#DC143C"; isInExText = "Gider"; }
     }
 
     closeModal = (data) => {
+        if(data != 'OK') {
+            
+            this.props.deleteEntry(data);
+        }
         this.props.changeModalVisibility(false);
-        this.props.setData(data);
-    }
-
-    yaz = () => {
-        alert(JSON.parse(this.props.data));
-        
     }
 
     render() {
+        entries = this.state.entries;
         return(
             <TouchableOpacity setOpacityTo={0.5} activeOpacity={1} disabled={true} style={styles.container}>
                 <View style={[styles.modal, { width: this.state.width - 80}]}>
-                    {this.state.veriler.gelirMiGiderMi ? (
-                        <View style={{ backgroundColor: "#3CB371", borderRadius: 0, padding: 10}}>
-                            <Text style={{ fontSize: 25, fontWeight: '500', color: "white", textAlign: "center" }}>Gelir</Text>
-                        </View>
-                    ) : (
-                            <View style={{ backgroundColor: "#DC143C", borderRadius: 0, padding: 7 }}>
-                                <Text style={{ fontSize: 25, fontWeight: '500', color: "white", textAlign: "center" }}>Gider</Text>
-                        </View>
-                    )}
+                    <View style={{ backgroundColor: isInEx, borderRadius: 0, padding: 10 }}>
+                        <Text style={{ fontSize: 25, fontWeight: '500', color: "white", textAlign: "center" }}>{isInExText}</Text>
+                    </View>
                     <View style={{textAlign: "center", margin: 10}}>
-                        <Text style={{fontSize: 20}}>Kategori: {this.state.veriler.kategoriAd}</Text>
-                        <Text>Miktar: {this.state.veriler.miktar} TL</Text>
-                        <Text>Tarih: {this.state.tarih}</Text>
-                        <Text>Etiket: {this.state.veriler.etiket}</Text>
+                        <Text style={{fontSize: 20}}>Kategori: {entries.category}</Text>
+                        <Text>Miktar: {entries.pay} TL {entries.id}</Text>
+                        <Text>Tarih: {entries.date}</Text>
                     </View>
                     <View style={{flexDirection: "row", alignSelf: "center" }}>
-                        <TouchableHighlight onPress={() => this.closeModal('Cancel')} style={[styles.touchableHighlight, { backgroundColor: "#DC143C", marginRight: 5 }]} underlayColor={'#f1f1f1'}>
+                        <TouchableHighlight onPress={() => this.closeModal(entries.id)} style={[styles.touchableHighlight, { backgroundColor: "#DC143C", marginRight: 5 }]} underlayColor={'#f1f1f1'}>
                             <Text style={styles.text}>Sil</Text>
                         </TouchableHighlight>
-                        <TouchableHighlight onPress={() => this.closeModal()} style={[styles.touchableHighlight, {backgroundColor: "green", marginLeft: 5}]} underlayColor={'#f1f1f1'}>
+                        <TouchableHighlight onPress={() => this.closeModal('OK')} style={[styles.touchableHighlight, {backgroundColor: "green", marginLeft: 5}]} underlayColor={'#f1f1f1'}>
                             <Text style={styles.text}>Tamam</Text>
                         </TouchableHighlight>
                     </View>
@@ -64,7 +55,7 @@ export default class MyModal extends Component {
 
 /*
 <View style={styles.textView}>
-                        <Text style={[styles.text, {fontSize: 20}]}>{this.state.veriler.id}</Text>
+                        <Text style={[styles.text, {fontSize: 20}]}>{this.state.entries.id}</Text>
                         <Text style={styles.text}>Modal Text</Text>
                     </View>
                     <View style={styles.buttonsView}>
