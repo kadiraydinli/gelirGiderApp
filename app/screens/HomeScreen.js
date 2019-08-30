@@ -146,7 +146,6 @@ export class HomeScreen extends React.Component {
             'Kategori: ' + item.category + "\n" +
             `${item.explanation != "" ? ('Açıklama: ' + item.explanation + '\n'): ""}` +
             'Miktar: ' + item.pay + ' TL\n' +
-            'Tarih: ' + item.date + '\n' +
             `${item.again ? ("Her ay tekrarlanıyor.") : ("")}`,
             [
                 {
@@ -180,34 +179,22 @@ export class HomeScreen extends React.Component {
                 <View style={styles.line} />
                 <Text style={{ textAlign: "center", margin: "1%", fontSize: 20, color: "black" }}>Son İşlemler</Text>
                 <View style={styles.line} />
-                <FlatList
-                    ListEmptyComponent={() => this.noItemDisplay()}
-                    data={this.state.allData}
-                    keyExtractor={((item, index) => index.toString())}
+                <FlatList ListEmptyComponent={() => this.noItemDisplay()}
+                    data={this.state.allData} keyExtractor={((item, index) => index.toString())}
                     refreshControl={
-                        <RefreshControl
-                            colors={["red"]}
-                            tintColor={["red"]}
-                            refreshing={this.state.refreshing}
+                        <RefreshControl colors={["red"]} tintColor={["red"]} refreshing={this.state.refreshing}
                             onRefresh={() => this.handleRefresh()} />
-                    }
+                        }
                     renderItem={({ item, index }) => (
                         <View>
                         <TouchableHighlight onPress={() => this.modal(item)} underlayColor={"#DCDCDC"}>
                             <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
-                                <View style={{}}>
-                                    {item.explanation == "" ? (
-                                        <Text>{item.date}  {item.category}</Text>
-                                    ) : (
-                                        <Text>{item.date}  {item.category} - {item.explanation}</Text>
-                                    )}
+                                <View>
+                                    {item.explanation == "" ? (<Text>{item.date}  {item.category}</Text>) : (
+                                        <Text>{item.date}  {item.category} - {item.explanation}</Text>)}
                                 </View>
-                                <View style={{}}>
-                                    {item.isInEx ? (
-                                        <Text style={{ color: "green" }}>+{item.pay} TL</Text>
-                                    ) : (
-                                        <Text style={{ color: "red" }}>-{item.pay} TL</Text>
-                                    )}
+                                <View>{item.isInEx ? (<Text style={{ color: "green" }}>+{item.pay} TL</Text>) : (
+                                        <Text style={{ color: "red" }}>-{item.pay} TL</Text>)}
                                 </View>   
                             </View>
                         </TouchableHighlight>
